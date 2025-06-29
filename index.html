@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Medicine Tracker</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f0f8ff;
+      margin: 0;
+    }
+
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .form-section {
+      flex: 1;
+      min-width: 250px;
+      max-width: 400px;
+    }
+
+    .form-section input,
+    .form-section button,
+    .form-section select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      font-size: 1rem;
+    }
+
+    .graph-section {
+      flex: 2;
+      min-width: 300px;
+    }
+
+    canvas {
+      width: 100% !important;
+      height: auto !important;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h2>💊 Medicine Decay Tracker</h2>
+
+  <div class="container">
+    <div class="form-section">
+      <label>Initial Dose (mL):
+        <input type="number" id="initialMed" step="0.1" placeholder="e.g. 500">
+      </label>
+      <label>Half-life (hours):
+        <input type="number" id="halfLife" step="0.1" placeholder="e.g. 4">
+      </label>
+      <label>Graph Mode:
+        <select id="graphMode">
+          <option value="static">Static (24 hrs)</option>
+          <option value="realtime">Real-Time</option>
+        </select>
+      </label>
+      <button onclick="startTracking()">Start Simulation</button>
+    </div>
+
+    <div class="graph-section">
+      <canvas id="decayChart"></canvas>
+    </div>
+  </div>
+
+  <script>
+    let chart;
+    let interval;
+    let lambda, initialMed;
+    let startTime;
+    let simulationRunning = false;
+
+    function startTracking() {
+      initialMed = parseFloat(document.getElementById("initialMed").value);
+      const halfLife = parseFloat(document.getElementById("halfLife").value);
+      const mode = document.getElementById("graphMode").value;
+
+      if (!initialMed || !halfLife) {
+        alert("Please enter valid numbers.");
+        return;
+      }
+
+      lambda = Math.log(2) / halfLife;
+
+      // Reset any existing chart or timer
+      if (chart) chart.destroy();
+      if (interval) clearInterval(interval);
+      simulationRunning = true;
+
+      const ctx = document.getElementById("decayChart").getContext("2d");
+
+      if (mode === "static") {
+        const labels = [];
+        const dataG = [];
+        const dataH = [];
+        for (let hour = 0; hour <= 24; hour += 0.5) {
+          const g = initialMed * Math.exp(-lambda * hour);
+          const h = g * (-lambda * hour);
+          labels.push(hour.toFixed(1));
+          dataG.push(g.toFixed(2));
+          dataH.push(h.toFixed(2));
+        }
+
+        chart = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: "Medicine Level g(x)",
+                data: dataG,
+                borderColor: "teal",
+                backgroundColor: "rgba(0,128,128,0.1)",
+                fill: true,
+                tension: 0.2
+              },
+              {
+                label: "Rate of Change h(x)",
+                data: dataH,
+                borderColor: "crimson",
+                backgroundColor: "rgba(220,20,60,0.1)",
+                fill: true,
+                tension: 0.2
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              x: { title: { display: true, text: "Time (hours)" } },
+              y: { title: { display: true, text: "Value (mL or rate)" }, beginAtZero: true }
+            }
+          }
+        });
+
+      } else if (mode === "realtime") {
+        startTime = Date.now();
+        chart = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: [],
+            datasets: [
+              {
+                label: "Medicine Level g(x)",
+                data: [],
+                borderColor: "teal",
+                backgroundColor: "rgba(0,128,128,0.1)",
+                fill: true,
+                tension: 0.2
+              },
+              {
+                label: "Rate of Change h(x)",
+                data: [],
+                borderColor: "crimson",
+                backgroundColor: "rgba(220,20,60,0.1)",
+                fill: true,
+                tension: 0.2
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              x: { title: { display: true, text: "Time (hours)" } },
+              y: { title: { display: true, text: "Value (mL or rate)" }, beginAtZero: true }
+            }
+          }
+        });
+
+        Notification.requestPermission().then(permission => {
+          if (permission !== "granted") {
+            alert("Notification permission denied.");
+            return;
+          }
+
+          interval = setInterval(() => {
+            if (!simulationRunning) return;
+
+            const now = Date.now();
+            const elapsedSeconds = Math.floor((now - startTime) / 1000);
+            const elapsedHours = elapsedSeconds / 3600;
+            const g = initialMed * Math.exp(-lambda * elapsedHours);
+            const h = g * (-lambda * elapsedHours);
+
+            chart.data.labels.push(elapsedHours.toFixed(2));
+            chart.data.datasets[0].data.push(g.toFixed(3));
+            chart.data.datasets[1].data.push(h.toFixed(3));
+            chart.update();
+
+            if (g < 1) {
+              clearInterval(interval);
+              simulationRunning = false;
+              const confirmTake = confirm("💊 Medicine level is below 1mL.\nTime to take your medicine. Did you take it?");
+              if (confirmTake) {
+                startTracking(); // restart
+              } else {
+                alert("Reminder stopped. No more tracking.");
+              }
+            }
+          }, 1000);
+        });
+      }
+    }
+  </script>
+</body>
+</html>
