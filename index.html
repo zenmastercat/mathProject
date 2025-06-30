@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Medicine Tracker</title>
+  <title>Medicine-Notifier</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
@@ -52,11 +52,14 @@
 </head>
 <body>
 
-  <h2>💊 Medicine Decay Tracker</h2>
+  <h2>💊 Medicine Decay Notifier</h2>
+  <h3>How to use our website?(introduction)</h3>
+  <h3>The first section is for the amount of medicine that you are taking in milligram.</h3>
+  <h3>the second section is for the half life specifically for each medicine.</h3>
 
   <div class="container">
     <div class="form-section">
-      <label>Initial Dose (mL):
+      <label>Initial Dose (mg):
         <input type="number" id="initialMed" step="0.1" placeholder="e.g. 500">
       </label>
       <label>Half-life (hours):
@@ -68,7 +71,7 @@
           <option value="realtime">Real-Time</option>
         </select>
       </label>
-      <button onclick="startTracking()">Start Simulation</button>
+      <button onclick="startTracking()">Start Tracking</button>
     </div>
 
     <div class="graph-section">
@@ -120,7 +123,7 @@
             labels: labels,
             datasets: [
               {
-                label: "Medicine Level g(x)",
+                label: "Medicine Level f(x)",
                 data: dataG,
                 borderColor: "teal",
                 backgroundColor: "rgba(0,128,128,0.1)",
@@ -128,7 +131,7 @@
                 tension: 0.2
               },
               {
-                label: "Rate of Change h(x)",
+                label: "Changing Rate of f(x)",
                 data: dataH,
                 borderColor: "crimson",
                 backgroundColor: "rgba(220,20,60,0.1)",
@@ -155,7 +158,7 @@
             labels: [],
             datasets: [
               {
-                label: "Medicine Level g(x)",
+                label: "Medicine Level f(x)",
                 data: [],
                 borderColor: "teal",
                 backgroundColor: "rgba(0,128,128,0.1)",
@@ -163,7 +166,7 @@
                 tension: 0.2
               },
               {
-                label: "Rate of Change h(x)",
+                label: "Changing Rate of f(x)",
                 data: [],
                 borderColor: "crimson",
                 backgroundColor: "rgba(220,20,60,0.1)",
