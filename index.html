@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Medicine-Notifier</title>
+  <title>Medicine Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
@@ -10,6 +11,11 @@
       padding: 20px;
       background: #f0f8ff;
       margin: 0;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      text-align: center;
     }
 
     .container {
@@ -25,8 +31,8 @@
     }
 
     .form-section input,
-    .form-section button,
-    .form-section select {
+    .form-section select,
+    .form-section button {
       width: 100%;
       padding: 10px;
       margin-top: 10px;
@@ -43,37 +49,79 @@
       height: auto !important;
     }
 
-    @media (max-width: 768px) {
+    .hidden {
+      display: none;
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 10px;
+      }
+
+      h2 {
+        font-size: 1.3rem;
+        text-align: center;
+      }
+
       .container {
         flex-direction: column;
+      }
+
+      input, select, button {
+        font-size: 1rem;
+        padding: 12px;
+        margin-top: 8px;
+      }
+
+      canvas {
+        width: 100% !important;
+        max-height: 300px;
       }
     }
   </style>
 </head>
 <body>
 
-  <h2>💊 Medicine Decay Notifier</h2>
-  <h3>How to use our website?(introduction)</h3>
-  <h3>The first section is for the amount of medicine that you are taking in milligram.</h3>
-  <h3>the second section is for the half life specifically for each medicine.</h3>
+  <h2>💊 Medicine Decay Tracker</h2>
 
   <div class="container">
+    <!-- Left section: input area -->
     <div class="form-section">
-      <label>Initial Dose (mg):
-        <input type="number" id="initialMed" step="0.1" placeholder="e.g. 500">
-      </label>
-      <label>Half-life (hours):
-        <input type="number" id="halfLife" step="0.1" placeholder="e.g. 4">
-      </label>
+      <label><strong>Input Method:</strong></label><br>
+      <input type="radio" name="inputMode" value="manual" checked onchange="toggleInputMode()"> Manual Input<br>
+      <input type="radio" name="inputMode" value="preset" onchange="toggleInputMode()"> Choose from Medicine List
+
+      <div id="manualInput">
+        <label>Initial Dose (mL):
+          <input type="number" id="initialMed" step="0.1" placeholder="e.g. 500">
+        </label>
+        <label>Half-life (hours):
+          <input type="number" id="halfLife" step="0.1" placeholder="e.g. 4">
+        </label>
+      </div>
+
+      <div id="presetInput" class="hidden">
+        <label>Select Medicine:
+          <select id="medicineSelect" onchange="loadPreset()">
+            <option value="">-- Choose --</option>
+            <option value="paracetamol">Paracetamol (500mg, 2h)</option>
+            <option value="ibuprofen">Ibuprofen (400mg, 2h)</option>
+            <option value="amoxicillin">Amoxicillin (500mg, 1h)</option>
+          </select>
+        </label>
+      </div>
+
       <label>Graph Mode:
         <select id="graphMode">
           <option value="static">Static (24 hrs)</option>
           <option value="realtime">Real-Time</option>
         </select>
       </label>
-      <button onclick="startTracking()">Start Tracking</button>
+
+      <button onclick="startTracking()">Start Simulation</button>
     </div>
 
+    <!-- Right section: graph -->
     <div class="graph-section">
       <canvas id="decayChart"></canvas>
     </div>
@@ -82,39 +130,61 @@
   <script>
     let chart;
     let interval;
-    let lambda, initialMed;
+    let lambda, initialMed, halfLife;
     let startTime;
     let simulationRunning = false;
 
+    const presetData = {
+      paracetamol: { dose: 500, halfLife: 2 },
+      ibuprofen: { dose: 400, halfLife: 2 },
+      amoxicillin: { dose: 500, halfLife: 1 }
+    };
+
+    function toggleInputMode() {
+      const mode = document.querySelector('input[name="inputMode"]:checked').value;
+      document.getElementById("manualInput").classList.toggle("hidden", mode !== "manual");
+      document.getElementById("presetInput").classList.toggle("hidden", mode !== "preset");
+    }
+
+    function loadPreset() {
+      const selected = document.getElementById("medicineSelect").value;
+      if (selected && presetData[selected]) {
+        initialMed = presetData[selected].dose;
+        halfLife = presetData[selected].halfLife;
+      }
+    }
+
     function startTracking() {
-      initialMed = parseFloat(document.getElementById("initialMed").value);
-      const halfLife = parseFloat(document.getElementById("halfLife").value);
-      const mode = document.getElementById("graphMode").value;
+      const inputMode = document.querySelector('input[name="inputMode"]:checked').value;
+
+      if (inputMode === "manual") {
+        initialMed = parseFloat(document.getElementById("initialMed").value);
+        halfLife = parseFloat(document.getElementById("halfLife").value);
+      }
 
       if (!initialMed || !halfLife) {
-        alert("Please enter valid numbers.");
+        alert("Please enter or select valid medicine data.");
         return;
       }
 
       lambda = Math.log(2) / halfLife;
 
-      // Reset any existing chart or timer
+      // Reset chart/timer
       if (chart) chart.destroy();
       if (interval) clearInterval(interval);
       simulationRunning = true;
 
       const ctx = document.getElementById("decayChart").getContext("2d");
+      const mode = document.getElementById("graphMode").value;
 
       if (mode === "static") {
-        const labels = [];
-        const dataG = [];
-        const dataH = [];
-        for (let hour = 0; hour <= 24; hour += 0.5) {
-          const g = initialMed * Math.exp(-lambda * hour);
-          const h = g * (-lambda * hour);
-          labels.push(hour.toFixed(1));
-          dataG.push(g.toFixed(2));
-          dataH.push(h.toFixed(2));
+        const labels = [], dataG = [], dataH = [];
+        for (let x = 0; x <= 24; x += 0.5) {
+          const gx = initialMed * Math.exp(-lambda * x);
+          const hx = gx * (-lambda * x);
+          labels.push(x.toFixed(1));
+          dataG.push(gx.toFixed(3));
+          dataH.push(hx.toFixed(3));
         }
 
         chart = new Chart(ctx, {
@@ -123,15 +193,15 @@
             labels: labels,
             datasets: [
               {
-                label: "Medicine Level f(x)",
+                label: "g(x) = initialMed × e^(-λx)",
                 data: dataG,
-                borderColor: "teal",
-                backgroundColor: "rgba(0,128,128,0.1)",
+                borderColor: "blue",
+                backgroundColor: "rgba(0, 0, 230, 0.1)",
                 fill: true,
                 tension: 0.2
               },
               {
-                label: "Changing Rate of f(x)",
+                label: "h(x) = g(x) × (-λx)",
                 data: dataH,
                 borderColor: "crimson",
                 backgroundColor: "rgba(220,20,60,0.1)",
@@ -149,8 +219,9 @@
             }
           }
         });
+      }
 
-      } else if (mode === "realtime") {
+      if (mode === "realtime") {
         startTime = Date.now();
         chart = new Chart(ctx, {
           type: "line",
@@ -158,15 +229,15 @@
             labels: [],
             datasets: [
               {
-                label: "Medicine Level f(x)",
+                label: "g(x) = initialMed × e^(-λx)",
                 data: [],
-                borderColor: "teal",
-                backgroundColor: "rgba(0,128,128,0.1)",
+                borderColor: "blue",
+                backgroundColor: "rgba(0, 0, 230, 0.1)",
                 fill: true,
                 tension: 0.2
               },
               {
-                label: "Changing Rate of f(x)",
+                label: "h(x) = g(x) × (-λx)",
                 data: [],
                 borderColor: "crimson",
                 backgroundColor: "rgba(220,20,60,0.1)",
@@ -196,23 +267,28 @@
 
             const now = Date.now();
             const elapsedSeconds = Math.floor((now - startTime) / 1000);
-            const elapsedHours = elapsedSeconds / 3600;
-            const g = initialMed * Math.exp(-lambda * elapsedHours);
-            const h = g * (-lambda * elapsedHours);
+            const x = elapsedSeconds / 3600;
+            const gx = initialMed * Math.exp(-lambda * x);
+            const hx = gx * (-lambda * x);
 
-            chart.data.labels.push(elapsedHours.toFixed(2));
-            chart.data.datasets[0].data.push(g.toFixed(3));
-            chart.data.datasets[1].data.push(h.toFixed(3));
+            chart.data.labels.push(x.toFixed(2));
+            chart.data.datasets[0].data.push(gx.toFixed(3));
+            chart.data.datasets[1].data.push(hx.toFixed(3));
             chart.update();
 
-            if (g < 1) {
+            // Scroll graph into view on mobile
+            if (elapsedSeconds === 2) {
+              document.querySelector('canvas').scrollIntoView({ behavior: "smooth" });
+            }
+
+            if (gx < 1) {
               clearInterval(interval);
               simulationRunning = false;
-              const confirmTake = confirm("💊 Medicine level is below 1mL.\nTime to take your medicine. Did you take it?");
-              if (confirmTake) {
+              const tookMed = confirm("💊 Your medicine is below 1mL.\nDid you take it?");
+              if (tookMed) {
                 startTracking(); // restart
               } else {
-                alert("Reminder stopped. No more tracking.");
+                alert("Tracking stopped.");
               }
             }
           }, 1000);
@@ -220,5 +296,7 @@
       }
     }
   </script>
+
 </body>
 </html>
+
