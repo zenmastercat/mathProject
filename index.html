@@ -87,23 +87,23 @@
   <div class="container">
     <!-- Left section: input area -->
     <div class="form-section">
-      <label><strong>Input Method:</strong></label><br>
+      <label><strong>วิเคราะห์:</strong></label><br>
       <input type="radio" name="inputMode" value="manual" checked onchange="toggleInputMode()"> Manual Input<br>
       <input type="radio" name="inputMode" value="preset" onchange="toggleInputMode()"> Choose from Medicine List
 
       <div id="manualInput">
-        <label>Initial Dose (mL):
+        <label>ปริมาณยาที่รับประทาน (mg):
           <input type="number" id="initialMed" step="0.1" placeholder="e.g. 500">
         </label>
-        <label>Half-life (hours):
+        <label>ค่าครึ่งชีวิตของตัวยา (ชั่วโมง):
           <input type="number" id="halfLife" step="0.1" placeholder="e.g. 4">
         </label>
       </div>
 
       <div id="presetInput" class="hidden">
-        <label>Select Medicine:
+        <label>กรุณาเลือกยา:
           <select id="medicineSelect" onchange="loadPreset()">
-            <option value="">-- Choose --</option>
+            <option value="">-- เลือก --</option>
             <option value="paracetamol">Paracetamol (500mg, 2h)</option>
             <option value="ibuprofen">Ibuprofen (400mg, 2h)</option>
             <option value="amoxicillin">Amoxicillin (500mg, 1h)</option>
@@ -193,7 +193,7 @@
             labels: labels,
             datasets: [
               {
-                label: "g(x) = initialMed × e^(-λx)",
+                label: "ปริมาณยา f(x)",
                 data: dataG,
                 borderColor: "blue",
                 backgroundColor: "rgba(0, 0, 230, 0.1)",
@@ -201,7 +201,7 @@
                 tension: 0.2
               },
               {
-                label: "h(x) = g(x) × (-λx)",
+                label: "อัตราการเปลี่ยนของ f(x)",
                 data: dataH,
                 borderColor: "crimson",
                 backgroundColor: "rgba(220,20,60,0.1)",
@@ -229,7 +229,7 @@
             labels: [],
             datasets: [
               {
-                label: "g(x) = initialMed × e^(-λx)",
+                label: "ปริมาณยา f(x)",
                 data: [],
                 borderColor: "blue",
                 backgroundColor: "rgba(0, 0, 230, 0.1)",
@@ -237,7 +237,7 @@
                 tension: 0.2
               },
               {
-                label: "h(x) = g(x) × (-λx)",
+                label: "อัตราการเปลี่ยนของ f(x)",
                 data: [],
                 borderColor: "crimson",
                 backgroundColor: "rgba(220,20,60,0.1)",
