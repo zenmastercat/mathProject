@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Medicine Tracker</title>
+  <title>Medicine-Notifier</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
@@ -87,9 +87,9 @@
   <div class="container">
     <!-- Left section: input area -->
     <div class="form-section">
-      <label><strong>วิเคราะห์:</strong></label><br>
-      <input type="radio" name="inputMode" value="manual" checked onchange="toggleInputMode()"> Manual Input<br>
-      <input type="radio" name="inputMode" value="preset" onchange="toggleInputMode()"> Choose from Medicine List
+      <label><strong>ระบบวิเคราะห์:</strong></label><br>
+      <input type="radio" name="inputMode" value="manual" checked onchange="toggleInputMode()"> แบบกรอกข้อมูลเอง<br>
+      <input type="radio" name="inputMode" value="preset" onchange="toggleInputMode()"> เลือกยาจากลิซ
 
       <div id="manualInput">
         <label>ปริมาณยาที่รับประทาน (mg):
@@ -111,14 +111,14 @@
         </label>
       </div>
 
-      <label>Graph Mode:
+      <label>รูปแบบกราฟ:
         <select id="graphMode">
-          <option value="static">Static (24 hrs)</option>
-          <option value="realtime">Real-Time</option>
+          <option value="static">แบบนิ่ง(ยังมีบัค)</option>
+          <option value="realtime">เรียลไทม์</option>
         </select>
       </label>
 
-      <button onclick="startTracking()">Start Simulation</button>
+      <button onclick="startTracking()">เริ่มจับเวลา</button>
     </div>
 
     <!-- Right section: graph -->
