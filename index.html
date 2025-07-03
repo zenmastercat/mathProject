@@ -180,7 +180,7 @@
       if (mode === "static") {
         const labels = [], dataG = [], dataH = [];
         for (let x = 0; x <= 24; x += 0.5) {
-          const gx = (initialMed * 1000) * Math.exp(-lambda * x);
+          const gx = initialMed * Math.exp(-0.693 * (x / halfLife));
           const hx = gx * (-lambda * x);
           labels.push(x.toFixed(1));
           dataG.push(gx.toFixed(3));
