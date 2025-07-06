@@ -1,1 +1,1 @@
-mathermeticalProject For Nakhornsawarn.
+mathProject For Nakhornsawarn.
