@@ -282,10 +282,10 @@
             }
 
             // condition for stopping the programme
-            if (gx < 1) {
+            if (gx < 100) {
               clearInterval(interval);
               simulationRunning = false;
-              const tookMed = confirm("💊 ยาของคุณเหลือต่ำกว่า 1 mg.\nคุณได้กินยารึยัง?");
+              const tookMed = confirm("💊 ยาของคุณเหลือต่ำกว่า 100 mg.\nคุณได้กินยารึยัง?");
               if (tookMed) {
                 startTracking(); // restart
               } else {
