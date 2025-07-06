@@ -285,11 +285,11 @@
             if (gx < 1) {
               clearInterval(interval);
               simulationRunning = false;
-              const tookMed = confirm("💊 Your medicine is below 1mL.\nDid you take it?");
+              const tookMed = confirm("💊 ยาของคุณเหลือต่ำกว่า 1 mg.\nคุณได้กินยารึยัง?");
               if (tookMed) {
                 startTracking(); // restart
               } else {
-                alert("Tracking stopped.");
+                alert("หยุดการจับเวลา.");
               }
             }
           }, 1000);
